@@ -9,5 +9,5 @@
  *   → Ambos jugadores deben usar la misma sala.
  *   → También se puede sobrescribir con ?room= en la URL.
  */
-export const SERVER_URL = 'wss://sab-museum-server.onrender.com';
+export const SERVER_URL = 'https://sab-museum.onrender.com';
 export const ROOM_ID    = 'sab';
