@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: sab-museum-server
+    env: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /

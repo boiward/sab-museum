@@ -561,6 +561,23 @@ export class Renderer {
       this._drawGenericChar(ctx, char);
     }
 
+    // Name tag for remote player
+    if (char.id === 'remote' && char.name) {
+      ctx.font         = 'bold 11px sans-serif';
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'bottom';
+      const label      = char.name;
+      const tw         = ctx.measureText(label).width;
+      // Background pill
+      ctx.fillStyle    = 'rgba(0,0,0,0.55)';
+      ctx.beginPath();
+      ctx.roundRect(-(tw / 2) - 5, -88, tw + 10, 16, 4);
+      ctx.fill();
+      // Text
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(label, 0, -74);
+    }
+
     ctx.restore();
   }
 

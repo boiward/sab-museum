@@ -5,7 +5,9 @@ import { ObjectManager }      from './ObjectManager.js';
 import { ZoneManager }        from './ZoneManager.js';
 import { PhotoViewer }        from './PhotoViewer.js';
 import { InteractionSystem }  from './InteractionSystem.js';
+import { Network }            from './Network.js';
 import { screenToGrid }       from './utils.js';
+import { SERVER_URL, ROOM_ID } from './config.js';
 
 import { exteriorZone }       from './zones/exterior.js';
 import { museumZone }         from './zones/museum.js';
@@ -39,6 +41,11 @@ export class Game {
     this._animFrame = null;
     this._transitioning = false; // guard against double-trigger
     this._characterSelected = false; // blocks input until character is chosen
+
+    // Multiplayer
+    this.network      = new Network();
+    this.remotePlayer = null;   // Character instance for the partner
+    this._netTimer    = 0;      // throttle sends to ~20 Hz
   }
 
   // ── Init ───────────────────────────────────────────────────────────────────
@@ -66,6 +73,9 @@ export class Game {
 
     // Show character selector on top
     this._showCharacterSelector();
+
+    // Connect to multiplayer server
+    this._initNetwork();
   }
 
   // ── Character selector ─────────────────────────────────────────────────────
@@ -98,6 +108,103 @@ export class Game {
 
     const overlay = document.getElementById('char-select');
     if (overlay) overlay.classList.add('hidden');
+  }
+
+  // ── Multiplayer ────────────────────────────────────────────────────────────
+
+  _initNetwork() {
+    // URL params override config (useful para testing)
+    const params    = new URLSearchParams(window.location.search);
+    const serverUrl = params.get('server') || SERVER_URL;
+    const roomId    = params.get('room')   || ROOM_ID;
+
+    this.network.connect(serverUrl, roomId);
+
+    // Partner connected → crear su personaje
+    this.network.onPartnerJoined(() => {
+      if (this.remotePlayer) return; // ya existe
+      this._createRemotePlayer(null);
+    });
+
+    // Partner desconectado → remover de la escena
+    this.network.onPartnerLeft(() => {
+      if (!this.remotePlayer) return;
+      this.characters = this.characters.filter(c => c !== this.remotePlayer);
+      this.remotePlayer = null;
+      this._setPartnerHUD(false);
+    });
+
+    // Sala llena (tercera persona intentando entrar)
+    this.network.onRoomFull(() => {
+      this._setPartnerHUD(false);
+    });
+
+    // Recibir estado del compañero
+    this.network.onPartnerState((state) => {
+      // Crear personaje remoto si aún no existe (join tardío)
+      if (!this.remotePlayer) this._createRemotePlayer(state);
+
+      // Aplicar estado recibido directamente (sin pathfinding)
+      const r = this.remotePlayer;
+      r.gx             = state.gx;
+      r.gy             = state.gy;
+      r.sx             = state.sx;
+      r.sy             = state.sy;
+      r.facing         = state.facing;
+      r.walkFrame      = state.walkFrame;
+      r.moving         = state.moving;
+      r.characterStyle = state.characterStyle;
+      r._zoneId        = state.zoneId;
+
+      // Mostrar solo si están en la misma zona
+      const sameZone = state.zoneId === this.zoneManager.currentZoneId;
+      const inList   = this.characters.includes(r);
+      if (sameZone && !inList) {
+        this.characters.push(r);
+      } else if (!sameZone && inList) {
+        this.characters = this.characters.filter(c => c !== r);
+      }
+
+      this._setPartnerHUD(true);
+    });
+  }
+
+  /** Crea el objeto Character para el jugador remoto. */
+  _createRemotePlayer(state) {
+    // El compañero usa el personaje opuesto al nuestro
+    const myStyle     = this.player?.characterStyle ?? 'edwdw';
+    const remoteStyle = state?.characterStyle ?? (myStyle === 'sabibi' ? 'edwdw' : 'sabibi');
+
+    const gx = state?.gx ?? 0;
+    const gy = state?.gy ?? 0;
+
+    const remote = new Character('remote', gx, gy, '#ffffff');
+    remote.characterStyle = remoteStyle;
+    remote.name           = remoteStyle === 'sabibi' ? 'Sabibi' : 'Edwdw';
+    remote._zoneId        = state?.zoneId ?? null;
+
+    if (state) {
+      remote.sx = state.sx ?? remote.sx;
+      remote.sy = state.sy ?? remote.sy;
+    } else {
+      remote.snapToGrid();
+    }
+
+    this.remotePlayer = remote;
+    // Solo se agrega al array cuando coincida la zona (ver onPartnerState)
+  }
+
+  /** Pequeño indicador en el HUD: "compañero conectado / desconectado". */
+  _setPartnerHUD(online) {
+    let el = document.getElementById('partner-status');
+    if (!el) {
+      el = document.createElement('span');
+      el.id = 'partner-status';
+      const toolbar = document.getElementById('toolbar');
+      if (toolbar) toolbar.appendChild(el);
+    }
+    el.textContent = online ? '● compañero conectado' : '○ esperando compañero…';
+    el.style.color = online ? '#7effa0' : '#aaa';
   }
 
   // ── Zone loading ───────────────────────────────────────────────────────────
@@ -135,6 +242,11 @@ export class Game {
       this.player.gy = sy;
       this.player.path   = [];
       this.player.moving = false;
+      // Rebuild characters list: player always first, remote only if same zone
+      this.characters = [this.player];
+      if (this.remotePlayer && this.remotePlayer._zoneId === zoneId) {
+        this.characters.push(this.remotePlayer);
+      }
     }
 
     // Snap camera instantly (no lerp on zone transition)
@@ -266,6 +378,25 @@ export class Game {
     );
     this.camera.update(dt);
     this.renderer.tick(dt);
+
+    // Enviar posición propia ~20 veces/segundo
+    if (this._characterSelected) {
+      this._netTimer += dt;
+      if (this._netTimer >= 0.05) {
+        this._netTimer = 0;
+        this.network.sendState({
+          gx:             this.player.gx,
+          gy:             this.player.gy,
+          sx:             this.player.sx,
+          sy:             this.player.sy,
+          facing:         this.player.facing,
+          walkFrame:      this.player.walkFrame,
+          moving:         this.player.moving,
+          characterStyle: this.player.characterStyle,
+          zoneId:         this.zoneManager.currentZoneId,
+        });
+      }
+    }
 
     const prevGx = this.player.gx;
     const prevGy = this.player.gy;
