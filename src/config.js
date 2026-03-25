@@ -1,5 +1,5 @@
 /**
- * Configuración de red para el modo multijugador.
+ * Configuración de red para el modo multijugador jeje.
  *
  * SERVER_URL: URL del servidor WebSocket en Render.com
  *   → Actualiza esta URL después de hacer deploy en Render.
