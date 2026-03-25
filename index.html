@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAB Museum</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── HUD overlay ─────────────────────────────────────────────────── -->
+  <div id="ui">
+    <div id="toolbar">
+      <span id="museum-title">SAB Museum</span>
+      <span id="zone-name">Jardín del Museo SAB</span>
+      <span id="coords" class="coords-display">(0, 0)</span>
+    </div>
+  </div>
+
+  <!-- Interaction hint (press E near a painting) -->
+  <div id="interaction-hint"></div>
+
+  <!-- ── Photo viewer overlay ────────────────────────────────────────── -->
+  <div id="photo-overlay">
+    <div id="photo-card">
+      <button id="photo-close" aria-label="Cerrar">✕</button>
+      <div id="photo-image-wrap">
+        <img id="photo-img" src="" alt="" />
+      </div>
+      <div id="photo-info">
+        <h2 id="photo-title"></h2>
+        <p  id="photo-author"></p>
+        <p  id="photo-description"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Character selector ─────────────────────────────────────────── -->
+  <div id="char-select">
+    <div id="char-select-inner">
+      <h1 id="char-select-title">SAB Museum</h1>
+      <p  id="char-select-sub">Elige tu personaje</p>
+      <div id="char-cards">
+        <div class="char-card" data-style="edwdw" tabindex="0" role="button" aria-label="Elegir Edwdw">
+          <canvas class="char-preview-canvas" width="110" height="160" data-style="edwdw"></canvas>
+          <div class="char-card-name">Edwdw</div>
+          <div class="char-card-desc">Curioso explorador</div>
+        </div>
+        <div class="char-card" data-style="sabibi" tabindex="0" role="button" aria-label="Elegir Sabibi">
+          <canvas class="char-preview-canvas" width="110" height="160" data-style="sabibi"></canvas>
+          <div class="char-card-name">Sabibi</div>
+          <div class="char-card-desc">Artista contemplativa</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Canvas ──────────────────────────────────────────────────────── -->
+  <canvas id="canvas"></canvas>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
