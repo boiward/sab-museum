@@ -33,6 +33,14 @@ export class Character {
     // Walk animation
     this.walkFrame = 0;
     this.walkTimer = 0;
+
+    // Emoji reaction
+    this.activeEmoji = null; // { glyph, age } o null
+  }
+
+  /** Dispara un emoji flotante sobre el personaje. */
+  triggerEmoji(glyph) {
+    this.activeEmoji = { glyph, age: 0 };
   }
 
   /** Snap world-space position to current grid tile (call after grid position change). */
@@ -91,6 +99,12 @@ export class Character {
     if (this.walkTimer > 0.15) {
       this.walkTimer = 0;
       this.walkFrame = (this.walkFrame + 1) % 4;
+    }
+
+    // Emoji lifetime (2 segundos)
+    if (this.activeEmoji) {
+      this.activeEmoji.age += dt;
+      if (this.activeEmoji.age >= 2.0) this.activeEmoji = null;
     }
   }
 }

@@ -6,6 +6,7 @@ import { ZoneManager }        from './ZoneManager.js';
 import { PhotoViewer }        from './PhotoViewer.js';
 import { InteractionSystem }  from './InteractionSystem.js';
 import { Network }            from './Network.js';
+import { AudioManager }       from './AudioManager.js';
 import { screenToGrid }       from './utils.js';
 import { SERVER_URL, ROOM_ID } from './config.js';
 
@@ -42,6 +43,13 @@ export class Game {
     this._transitioning = false; // guard against double-trigger
     this._characterSelected = false; // blocks input until character is chosen
 
+    // Audio
+    this.audio = new AudioManager();
+
+    // Emoji picker
+    this._emojiPickerOpen = false;
+    this._emojiPickerEl   = null;
+
     // Multiplayer
     this.network      = new Network();
     this.remotePlayer = null;   // Character instance for the partner
@@ -65,10 +73,15 @@ export class Game {
     // Load artworks metadata
     await this._loadArtworks();
 
+    // Register music tracks (royalty-free, Pixabay)
+    this.audio.register('exterior', 'https://cdn.pixabay.com/audio/2022/03/15/audio_8cb3d3f30e.mp3');
+    this.audio.register('museum',   'https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3');
+
     // Start in the exterior zone (game runs in background while selector shows)
     this._enterZone('exterior');
 
     this._bindEvents();
+    this._buildEmojiPicker();
     this._loop(performance.now());
 
     // Show character selector on top
@@ -108,6 +121,9 @@ export class Game {
 
     const overlay = document.getElementById('char-select');
     if (overlay) overlay.classList.add('hidden');
+
+    // Primera interacción del usuario — ahora el navegador permite autoplay
+    this.audio.switchTo(this.zoneManager.currentZoneId);
   }
 
   // ── Multiplayer ────────────────────────────────────────────────────────────
@@ -137,6 +153,11 @@ export class Game {
     // Sala llena (tercera persona intentando entrar)
     this.network.onRoomFull(() => {
       this._setPartnerHUD(false);
+    });
+
+    // Recibir emoji del compañero
+    this.network.onEmoji((msg) => {
+      if (this.remotePlayer) this.remotePlayer.triggerEmoji(msg.glyph);
     });
 
     // Recibir estado del compañero
@@ -216,6 +237,9 @@ export class Game {
     if (!zone) { console.warn(`Zone "${zoneId}" not registered.`); return; }
 
     this.zoneManager.currentZoneId = zoneId;
+
+    // Cambiar música de la zona (solo si el usuario ya eligió personaje)
+    if (this._characterSelected) this.audio.switchTo(zoneId);
 
     // Build map from zone grid
     const { map, treeObjects } = this.zoneManager.buildMap(zone);
@@ -348,13 +372,92 @@ export class Game {
       if (coordEl) coordEl.textContent = `(${grid.x}, ${grid.y})`;
     });
 
-    // E key = interact
+    // E key = interact | Q/Tab = emoji picker | Escape = cerrar picker
     window.addEventListener('keydown', (e) => {
       if (!this._characterSelected) return;
+
+      if (e.key === 'q' || e.key === 'Q' || e.key === 'Tab') {
+        e.preventDefault();
+        if (this._emojiPickerOpen) this._closeEmojiPicker();
+        else                       this._openEmojiPicker();
+        return;
+      }
+
+      if (e.key === 'Escape' && this._emojiPickerOpen) {
+        this._closeEmojiPicker();
+        return;
+      }
+
       if (e.key === 'e' || e.key === 'E') {
         this.interactionSystem.interactWithNearest();
       }
     });
+
+    // Controles de volumen
+    document.getElementById('mute-btn')?.addEventListener('click', () => {
+      const muted = this.audio.toggleMute();
+      const btn   = document.getElementById('mute-btn');
+      if (btn) btn.textContent = muted ? '🔇' : '🔊';
+    });
+
+    document.getElementById('vol-slider')?.addEventListener('input', (e) => {
+      this.audio.setVolume(parseFloat(e.target.value));
+    });
+  }
+
+  // ── Emoji picker ───────────────────────────────────────────────────────────
+
+  _buildEmojiPicker() {
+    const EMOJIS = ['❤️', '👋', '😮', '😄', '🎨', '👏', '✨', '🤔'];
+    const panel  = document.createElement('div');
+    panel.id     = 'emoji-picker';
+    panel.classList.add('hidden');
+
+    EMOJIS.forEach(glyph => {
+      const btn         = document.createElement('button');
+      btn.className     = 'emoji-btn';
+      btn.textContent   = glyph;
+      btn.title         = glyph;
+      btn.addEventListener('click', () => {
+        this._sendEmoji(glyph);
+        this._closeEmojiPicker();
+      });
+      panel.appendChild(btn);
+    });
+
+    document.body.appendChild(panel);
+    this._emojiPickerEl = panel;
+  }
+
+  _openEmojiPicker() {
+    this._emojiPickerOpen = true;
+    if (this._emojiPickerEl) {
+      // Re-crear el elemento para que la animación CSS se reproduzca de nuevo
+      const parent = this._emojiPickerEl.parentNode;
+      parent.removeChild(this._emojiPickerEl);
+      this._emojiPickerEl.classList.remove('hidden');
+      parent.appendChild(this._emojiPickerEl);
+    }
+
+    // Cerrar al hacer click fuera
+    const onOutsideClick = (e) => {
+      if (!this._emojiPickerEl?.contains(e.target)) {
+        this._closeEmojiPicker();
+        document.removeEventListener('mousedown', onOutsideClick);
+      }
+    };
+    setTimeout(() => document.addEventListener('mousedown', onOutsideClick), 0);
+  }
+
+  _closeEmojiPicker() {
+    this._emojiPickerOpen = false;
+    this._emojiPickerEl?.classList.add('hidden');
+  }
+
+  _sendEmoji(glyph) {
+    if (!this.player) return;
+    this.player.triggerEmoji(glyph);
+    this.network.sendEmoji(glyph);
   }
 
   // ── Game loop ──────────────────────────────────────────────────────────────

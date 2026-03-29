@@ -19,6 +19,7 @@ export class Network {
     this._cbPartnerJoined = null;
     this._cbPartnerLeft   = null;
     this._cbRoomFull      = null;
+    this._cbEmoji         = null;
   }
 
   // ── Conexión ──────────────────────────────────────────────────────────────
@@ -80,6 +81,10 @@ export class Network {
       case 'state':
         this._cbPartnerState?.(msg);
         break;
+
+      case 'emoji':
+        this._cbEmoji?.(msg);
+        break;
     }
   }
 
@@ -91,12 +96,19 @@ export class Network {
     this._ws.send(JSON.stringify({ type: 'state', ...state }));
   }
 
+  /** Envía una reacción emoji al compañero. */
+  sendEmoji(glyph) {
+    if (!this._connected || this._ws?.readyState !== WebSocket.OPEN) return;
+    this._ws.send(JSON.stringify({ type: 'emoji', glyph }));
+  }
+
   // ── Callbacks ─────────────────────────────────────────────────────────────
 
   onPartnerState(cb)  { this._cbPartnerState  = cb; }
   onPartnerJoined(cb) { this._cbPartnerJoined = cb; }
   onPartnerLeft(cb)   { this._cbPartnerLeft   = cb; }
   onRoomFull(cb)      { this._cbRoomFull      = cb; }
+  onEmoji(cb)         { this._cbEmoji         = cb; }
 
   get connected() { return this._connected; }
 }

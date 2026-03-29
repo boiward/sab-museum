@@ -578,6 +578,23 @@ export class Renderer {
       ctx.fillText(label, 0, -74);
     }
 
+    // Emoji flotante — sube y se desvanece en 2 segundos
+    if (char.activeEmoji) {
+      const { glyph, age } = char.activeEmoji;
+      const progress = age / 2.0;                                     // 0..1
+      const floatY   = -108 - progress * 36;                          // sube 36px sobre el name tag
+      const alpha    = progress < 0.65 ? 1 : 1 - ((progress - 0.65) / 0.35); // fade los últimos 35%
+      const scale    = progress < 0.12 ? progress / 0.12 : 1;        // pop-in inicial
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.font        = `${Math.round(22 * scale)}px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif`;
+      ctx.textAlign    = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(glyph, 0, floatY);
+      ctx.restore();
+    }
+
     ctx.restore();
   }
 
