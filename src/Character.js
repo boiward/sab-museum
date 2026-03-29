@@ -60,6 +60,12 @@ export class Character {
 
   /** offsetX/offsetY params kept for backward-compat but ignored — we use world space. */
   update(dt) {
+    // Emoji lifetime — siempre actualizar, independiente del movimiento
+    if (this.activeEmoji) {
+      this.activeEmoji.age += dt;
+      if (this.activeEmoji.age >= 2.0) this.activeEmoji = null;
+    }
+
     if (!this.moving || this.path.length === 0) {
       this.moving    = false;
       this.walkFrame = 0;
@@ -101,10 +107,5 @@ export class Character {
       this.walkFrame = (this.walkFrame + 1) % 4;
     }
 
-    // Emoji lifetime (2 segundos)
-    if (this.activeEmoji) {
-      this.activeEmoji.age += dt;
-      if (this.activeEmoji.age >= 2.0) this.activeEmoji = null;
-    }
   }
 }
