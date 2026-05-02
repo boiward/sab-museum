@@ -12,7 +12,7 @@ export class AudioManager {
     this._tracks       = {}; // zoneId -> HTMLAudioElement
     this._current      = null;
     this._currentZone  = null;
-    this._volume       = 0.35;
+    this._volume       = 0.1;
     this._muted        = false;
     this._fadeDuration = 1500; // ms
   }
