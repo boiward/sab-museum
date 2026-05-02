@@ -2,9 +2,9 @@
   "_readme": "Para agregar una foto: pon el archivo en assets/artworks/ y llena los campos aquí. El 'id' debe coincidir con el 'artworkId' del cuadro en src/zones/museum.js.",
   "artworks": [
     { "id": "art_01", "title": "Machape",  "author": "Sab_0", "year": "2024", "description": "Un Machape salvaje captado en camara jugando un juego de terror en VRChat", "image": "./assets/artworks/machape.png" },
-    { "id": "art_02", "title": "Obra 2",  "author": "", "year": "", "description": "", "image": "" },
-    { "id": "art_03", "title": "Obra 3",  "author": "", "year": "", "description": "", "image": "" },
-    { "id": "art_04", "title": "Obra 4",  "author": "", "year": "", "description": "", "image": "" },
+    { "id": "art_02", "title": "Reina",  "author": "Sab_0", "year": "2024", "description": "Una reina misteriosa usando lentes", "image": "./assets/artworks/Reina.png" },
+    { "id": "art_03", "title": "Dibujo",  "author": "Boiward", "year": "2024", "description": "Un bello dibujo de una bella chica", "image": "./assets/artworks/DibujoVr.png" },
+    { "id": "art_04", "title": "Viaje",  "author": "Boiward", "year": "2024", "description": "El consumo de sustancias esta prohibido", "image": "./assets/artworks/Viaje.png" },
     { "id": "art_05", "title": "Obra 5",  "author": "", "year": "", "description": "", "image": "" },
     { "id": "art_06", "title": "Obra 6",  "author": "", "year": "", "description": "", "image": "" },
     { "id": "art_07", "title": "Obra 7",  "author": "", "year": "", "description": "", "image": "" },
