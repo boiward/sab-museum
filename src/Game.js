@@ -75,7 +75,7 @@ export class Game {
 
     // Register music tracks (royalty-free, Pixabay)
     this.audio.register('exterior', './assets/audio/BeeGeesHowDeepIsYourLove.mp3');
-    this.audio.register('museum',   'https://cdn.pixabay.com/audio/2022/08/04/audio_2dde668d05.mp3');
+    this.audio.register('museum',   './assets/audio/Bonsai.mp3');
 
     // Start in the exterior zone (game runs in background while selector shows)
     this._enterZone('exterior');
