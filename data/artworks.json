@@ -1,7 +1,7 @@
 {
   "_readme": "Para agregar una foto: pon el archivo en assets/artworks/ y llena los campos aquí. El 'id' debe coincidir con el 'artworkId' del cuadro en src/zones/museum.js.",
   "artworks": [
-    { "id": "art_01", "title": "Obra 1",  "author": "", "year": "", "description": "", "image": "" },
+    { "id": "art_01", "title": "Machape",  "author": "Sab_0", "year": "2024", "description": "Un Machape salvaje captado en camara jugando un juego de terror en VRChat", "image": "./assets/artworks/machape.jpg" },
     { "id": "art_02", "title": "Obra 2",  "author": "", "year": "", "description": "", "image": "" },
     { "id": "art_03", "title": "Obra 3",  "author": "", "year": "", "description": "", "image": "" },
     { "id": "art_04", "title": "Obra 4",  "author": "", "year": "", "description": "", "image": "" },
