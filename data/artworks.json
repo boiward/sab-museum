@@ -26,7 +26,7 @@
     { "id": "art_23", "title": "Regalo", "author": "Boiward", "year": "2024", "description": "Un regalo que jamás llegará...", "image": "./assets/artworks/Regalo.jpeg" },
     { "id": "art_24", "title": "Primer Paso", "author": "XXXX", "year": "2024", "description": "El inicio...", "image": "./assets/artworks/PrimerPaso.jpeg" },
     { "id": "art_25", "title": "Cabalgando", "author": "Boiward", "year": "2025", "description": "Heroina cabalgando en su fiel compañera", "image": "./assets/artworks/Cabalgando.jpeg" },
-    { "id": "art_26", "title": "Llama", "author": "Boiward", "year": "2025", "description": "Ella y una llamita", "image": "./assets/artworks/Lllama.jpeg" },
+    { "id": "art_26", "title": "Llama", "author": "Boiward", "year": "2025", "description": "Ella y una llamita", "image": "./assets/artworks/Palca.jpeg" },
     { "id": "art_27", "title": "Primer día", "author": "Boiward", "year": "XXXX", "description": "Aquí fue... el primer día... mi paso mas importante...", "image": "./assets/artworks/FirstDay.png" },
     { "id": "art_28", "title": "Día de Golf", "author": "Boiward", "year": "XXXX", "description": "Recurdas? jugamos golf aquí al principio...", "image": "./assets/artworks/GolfDay.png" },
     { "id": "art_29", "title": "Competitividad y Música", "author": "Boiward", "year": "XXXX", "description": "Dos cosas... nuestro primer encuentro y las primeras partidas de Ajedrez", "image": "./assets/artworks/CompetitividadMusic.png" },
